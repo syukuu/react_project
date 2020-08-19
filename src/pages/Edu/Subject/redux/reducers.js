@@ -1,6 +1,8 @@
 import {
   GET_SUBJECT_LIST,
-  GET_SEC_SUBJECT_LIST
+  GET_SEC_SUBJECT_LIST,
+  UPDATE_SUBJECT,
+  DELETE_SUBJECT
 } from "./constants";
 
 const initUserList = {
@@ -30,6 +32,41 @@ export default function subjectList(prevState = initUserList, action) {
       return {
         ...prevState,
         items: firstItems
+      }
+    case UPDATE_SUBJECT:
+      // 根据id找到指定的课程分类,然后修改title属性
+      prevState.items.forEach(item => {
+        if (item._id === action.data.id) {
+          item.title = action.data.title
+          return
+        }
+        item.children.forEach(secItem => {
+          if (secItem.id === action.data.id) {
+            item.title = action.data.title
+          }
+        })
+      })
+      return {
+        ...prevState
+      }
+    case DELETE_SUBJECT:
+      prevState.items.forEach((item, index) => {
+        console.log(item._id, action.data, '333')
+        if (item._id === action.data) {
+          console.log(prevState, '4444')
+          delete prevState.items[index]
+          return
+        }
+        item.children.forEach(secItem => {
+          if (secItem.id === action.data.id) {
+
+            delete item.secItem
+            return
+          }
+        })
+      })
+      return {
+        ...prevState
       }
     default:
       return prevState;

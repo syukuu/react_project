@@ -19,3 +19,44 @@ export function reqGetSecSubject(parentId) {
         method: "GET",
     });
 }
+
+// 添加数据
+// http://localhost:5000/admin/edu/subject/save
+export function reqAddSubject(title, parentId) {
+    console.log(title);
+    return request({
+        url: `${BASE_URL}/save`,
+        method: "POST",
+        data: {
+            title,
+            parentId
+        }
+    });
+}
+
+// 更新数据
+// http://localhost:5000/admin/edu/subject/update
+export function reqSubjectUpdate(id, title) {
+    return request({
+        url: `${BASE_URL}/update`,
+        method: "PUT",
+        data: {
+            id,
+            title,
+        }
+    });
+}
+
+// 删除数据
+// http://localhost:5000/admin/edu/subject/remove/:id
+export function reqSubjectDel(id) {
+    console.log('进入api');
+    console.log(id);
+    return request({
+        url: `${BASE_URL}/remove/${id}`,
+        method: "DELETE",
+        data: {
+            id
+        }
+    });
+}

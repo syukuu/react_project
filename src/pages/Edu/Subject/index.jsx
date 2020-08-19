@@ -1,80 +1,32 @@
 import React, { Component } from "react";
-import { Button, Table, Tooltip, Pagination } from "antd";
+import { Button, Table, Tooltip, Pagination, Input, message, Popconfirm } from "antd";
 import { PlusOutlined, FormOutlined, DeleteOutlined } from "@ant-design/icons";
 import { connect } from 'react-redux'
-import { getSubjectList, getSecSubjectList } from './redux'
+import { getSubjectList, getSecSubjectList, updateSubjectList, delSubjectList } from './redux'
+import { reqSubjectUpdate, reqSubjectDel } from '@api/edu/subject'
 
 import "./index.less";
 
-
-
-
-
-const columns = [
-  { title: "分类名称", dataIndex: "title", key: "name" },
-  {
-    title: "操作 ",
-    dataIndex: "",
-    key: "x",
-    render: () => (
-      <div>
-        <Tooltip title="修改">
-          <Button type="primary" style={{ marginRight: 20 }}>
-            <FormOutlined />
-          </Button>
-        </Tooltip>
-        <Tooltip title="删除">
-          <Button type="danger">
-            <DeleteOutlined />
-          </Button>
-        </Tooltip>
-      </div>
-    ),
-    width: 200,
-  },
-];
-
-const data = [
-  {
-    key: 1,
-    name: "John Brown",
-    age: 32,
-    address: "New York No. 1 Lake Park",
-    description:
-      "My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.",
-  },
-  {
-    key: 2,
-    name: "Jim Green",
-    age: 42,
-    address: "London No. 1 Lake Park",
-    description:
-      "My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park.",
-  },
-  {
-    key: 3,
-    name: "Not Expandable",
-    age: 29,
-    address: "Jiangsu No. 1 Lake Park",
-    description: "This not expandable",
-  },
-  {
-    key: 4,
-    name: "Joe Black",
-    age: 32,
-    address: "Sidney No. 1 Lake Park",
-    description:
-      "My name is Joe Black, I am 32 years old, living in Sidney No. 1 Lake Park.",
-  },
-];
-
 // 使用修饰器语法，传入展示组件可以不写
-@connect(state => ({ subjectList: state.subjectList }), { getSubjectList, getSecSubjectList})
+@connect(state => ({
+  subjectList: state.subjectList
+}), {
+  getSubjectList,
+  getSecSubjectList,
+  updateSubjectList,
+  delSubjectList
+})
 
 class Subject extends Component {
+
+  // 定义用来判断切换展示组件的id
+  state = {
+    subjectId: '',
+    title: ''
+  }
   componentDidMount() {
     // 组件挂载时调用异步action
-    this.props.getSubjectList(1, 5)
+    this.props.getSubjectList(1, 10)
   }
 
   handleChange = (page, pageNumber) => {
@@ -94,18 +46,146 @@ class Subject extends Component {
   handleExpand = (expanded, record) => {
     // console.log(expanded, record)
     if (expanded) {
-      console.log(this.props)
+
       this.props.getSecSubjectList(record._id)
     }
   }
 
+  // 增加
+  handleToAdd = () => {
+    this.props.history.push('/edu/subject/add')
+  }
 
+  // 修改
+  handleUpdate = record => () => {
+    // console.log(this.state);
+    // console.log(record._id);
+    this.setState({
+      subjectId: record._id,
+      title: record.title
+    })
+
+    this.title = record.title
+  }
+  // 更新变化
+  handleUpdateChange = e => {
+    this.setState({
+      title: e.target.value
+    })
+
+  }
+
+  // 取消按钮
+  handleCancle = () => {
+    this.setState({
+      subjectId: '',
+      title: ''
+    })
+  }
+
+  // 修改数据，确认
+  handleUpdateConfirm = async () => {
+    if (!this.state.title.trim()) {
+      message.warning('请输入内容')
+      return
+    }
+    if (this.state.title === this.title) {
+      message.warning('输入内容不能一致')
+      return
+    }
+    const id = this.state.subjectId
+    const title = this.state.title
+    // await reqSubjectUpdate(id, title)
+    await this.props.updateSubjectList(id, title)
+
+    message.success('修改成功')
+    this.setState({
+      subjectId: '',
+      title: ''
+    })
+    // this.props.getSubjectList(1, 10)
+  }
+
+  // 删除
+  handleDel = record => async () => {
+    // reqSubjectDel(record._id) // -->  重新点击可展开+
+
+    await this.props.delSubjectList(record._id)
+    message.success('删除成功')
+    // this.setState({
+    //   subjectId: '',
+    //   title: ''
+    // })
+    this.props.getSubjectList(1, 10)
+  }
 
   render() {
+    // columns中的数据要动态渲染，因此要放入render函数中
+    const columns = [
+      {
+        title: "分类名称",
+        key: "name",
+
+        render: record => {
+          if (this.state.subjectId === record._id) {
+            return (
+              <Input
+                style={{ width: 300 }}
+                value={this.state.title}
+                onChange={this.handleUpdateChange}
+              ></Input>
+            )
+          }
+          return record.title
+        }
+      },
+      {
+        title: "操作 ",
+        key: "x",
+        // 判断显示的组件
+        render: record => {
+          if (this.state.subjectId === record._id) {
+            return (
+              <>
+                <Button type='primary' style={{ marginRight: 10 }} onClick={this.handleUpdateConfirm}>
+                  确认
+                </Button>
+                <Button type='danger' onClick={this.handleCancle}>取消</Button>
+              </>
+            )
+          } else {
+            return (
+              <>
+                <Tooltip title="修改">
+                  <Button type="primary"
+                    style={{ marginRight: 20 }}
+                    onClick={this.handleUpdate(record)}>
+                    <FormOutlined />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="删除">
+                  <Popconfirm
+                    okText="删除"
+                    cancelText="取消"
+                    // onCancel={}
+                    onConfirm={this.handleDel(record)}
+                  >
+                    <Button type="danger">
+                      <DeleteOutlined />
+                    </Button>
+                  </Popconfirm>
+                </Tooltip>
+              </>
+            )
+          }
+        },
+        width: 200,
+      },
+    ];
 
     return (
-      <div className="Subject">
-        <Button type="primary" size="large" className="addClass">
+      <div className="Subject" >
+        <Button type="primary" size="large" className="addClass" onClick={this.handleToAdd}>
           <PlusOutlined />
           新建
         </Button>
