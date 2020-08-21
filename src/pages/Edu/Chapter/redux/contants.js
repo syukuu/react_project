@@ -1,0 +1,3 @@
+export const GET_ALL_COURSE = 'GET_ALL_COURSE'
+export const GET_ALL_CHAPTER = 'GET_ALL_CHAPTER'
+export const GET_ALL_LESSON = 'GET_ALL_LESSON'
