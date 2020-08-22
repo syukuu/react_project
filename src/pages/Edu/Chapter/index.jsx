@@ -92,6 +92,11 @@ class Chapter extends Component {
     }
   }
 
+  // 跳转到添加课程页面
+  handleToLesson = data => () => {
+    this.props.history.push('/edu/chapter/addlesson', data)
+  }
+
   render() {
     const { previewVisible, previewImage, selectedRowKeys } = this.state;
     const columns = [
@@ -125,8 +130,8 @@ class Chapter extends Component {
         render: (data) => {
           return (
             <div>
-              <Tooltip title="查看详情">
-                <Button type='primary'>
+              <Tooltip title="新增课时">
+                <Button type='primary' onClick={this.handleToLesson(data)}>
                   <PlusOutlined />
                 </Button>
               </Tooltip>

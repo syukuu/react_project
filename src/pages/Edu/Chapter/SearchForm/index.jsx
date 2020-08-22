@@ -9,9 +9,11 @@ import "./index.less";
 const { Option } = Select;
 
 function SearchForm(props) {
+  // form从Form的hook中解构，并和Form进行关联
   const [form] = Form.useForm();
 
   const resetForm = () => {
+    // 重置 域
     form.resetFields();
   };
 

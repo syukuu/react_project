@@ -67,7 +67,6 @@ axiosInstance.interceptors.request.use(
 
     // 从redux中读取token
     const { token } = store.getState();
-
     if (token) {
       config.headers.token = token;
     }
