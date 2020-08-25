@@ -4,7 +4,7 @@ import { Card, Input, Form, Button, Switch, message } from 'antd'
 import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import MyUpload from '@comps/Upload'
-import { reqUpdateLesson } from '@api/edu/lesson'
+import { addLesson } from '@api/edu/lesson'
 
 
 
@@ -23,26 +23,17 @@ const layout = {
 
 class AddLesson extends Component {
     onFinish = async values => {
-        const { title, free, video } = values
-        const charpterId = this.props.location.state._id
+        // console.log(values);
         // 发送请求，更新课时列表
-        // const data = {
-        //     // 章节id可以在点击跳转到此页时，通过路由传参传过来
-        //     chapterId: this.props.location.state._id,
-        //     title: values.title,
-        //     free: values.free,
-        //     video: values.video
-        // }
         const data = {
-            charpterId,
-            title, 
-            free, 
-            video
+            // 章节id可以在点击跳转到此页时，通过路由传参传过来
+            chapterId: this.props.location.state._id,
+            title: values.title,
+            free: values.free,
+            video: values.video
         }
-        
-        await reqUpdateLesson(data)
-        console.log(reqUpdateLesson(data));
-
+        // console.log(data);
+        await addLesson(data)
         message.success('课时添加成功')
         this.props.history.push('/edu/chapter/list')
     }

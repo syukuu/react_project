@@ -10,12 +10,14 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import Player from 'griffith'
+import screenfull from 'screenfull'
 
 import relativeTime from "dayjs/plugin/relativeTime";
 
 import { connect } from "react-redux";
 import SearchForm from "./SearchForm";
-import { getChapterList, getLessonList } from "./redux";
+import { getChapterList, getLessonList, delLessonList, delChapterList } from "./redux";
 
 import "./index.less";
 
@@ -23,13 +25,14 @@ dayjs.extend(relativeTime);
 
 @connect(
   (state) => ({ chapterList: state.chapterList.chapterList })
-  , { getChapterList, getLessonList })
+  , { getChapterList, getLessonList, delLessonList, delChapterList })
 class Chapter extends Component {
   state = {
     searchLoading: false,
     previewVisible: false,
     previewImage: "",
     selectedRowKeys: [],
+    play_url: ''
   };
 
   showImgModal = (img) => {
@@ -97,6 +100,43 @@ class Chapter extends Component {
     this.props.history.push('/edu/chapter/addlesson', data)
   }
 
+  // 点击'预览'
+  handlePreviewVideo = record => () => {
+    this.setState({
+      previewVisible: true,
+      // 点击时，把视频地址赋值给属性
+      play_url: record.video
+    });
+  }
+
+  // 点击批量删除
+  handleBatchRemove = () => {
+    // 定义章节id数组 --- 匹配到的 要删除的章节
+    const chapterIdList = []
+    // 遍历所有章节，看数组元素的id是否能和 selectedRowKeys的值 匹配
+    this.props.chapterList.forEach(item => {
+      if (this.state.selectedRowKeys.indexOf(item._id) > -1) {
+        // 匹配上，就是要删除的章节
+        chapterIdList.push(item._id)
+      }
+    })
+
+    // 定义课时id数组 --- 匹配到的要删除的id
+    // lesson在chapter的children属性中
+    // item是要删除的每一项数据的id
+    const lessonIdList = this.state.selectedRowKeys.filter(item => {
+      if (chapterIdList.indexOf(item) > -1) {
+        // id存在章节id数组， 就是要删除
+        return false
+      }
+      return true
+    })
+
+    // delLessonList, delChapterList
+    this.props.delChapterList(chapterIdList)
+    this.props.delLessonList(lessonIdList)
+    message.success('批量删除成功')
+  }
   render() {
     const { previewVisible, previewImage, selectedRowKeys } = this.state;
     const columns = [
@@ -110,7 +150,7 @@ class Chapter extends Component {
         render: (isFree) => {
           // console.log(isFree)
           // 写了dataIndex之后，render函数的参数接收的就是dataIndex的值
-          // 不写就是一整行的对象
+          // 不写就是当前整行的对象
           return isFree === true ? "是" : isFree === false ? "否" : "";
         },
       },
@@ -119,7 +159,7 @@ class Chapter extends Component {
         render: (record) => {
           // console.log(record)
           if (record.free) {
-            return <Button>预览</Button>
+            return <Button onClick={this.handlePreviewVideo(record)}>预览</Button>
           }
         }
       },
@@ -189,6 +229,17 @@ class Chapter extends Component {
       //   }
       // ]
     };
+    const sources = {
+      hd: {
+        play_url: this.state.play_url,
+        bitrate: 1,
+        duration: 1000,
+        format: '',
+        height: 500,
+        size: 160000,
+        width: 500
+      }
+    }
 
     return (
       <div>
@@ -203,11 +254,15 @@ class Chapter extends Component {
                 <PlusOutlined />
                 <span>新增</span>
               </Button>
-              <Button type="danger" style={{ marginRight: 10 }}>
+              <Button type="danger" style={{ marginRight: 10 }} onClick={this.handleBatchRemove}>
                 <span>批量删除</span>
               </Button>
-              <Tooltip title="全屏" className="course-table-btn">
-                <FullscreenOutlined />
+              <Tooltip title='全屏' className='course-table-btn'>
+                <FullscreenOutlined
+                  onClick={() => {
+                    screenfull.toggle()
+                  }}
+                />
               </Tooltip>
               <Tooltip title="刷新" className="course-table-btn">
                 <RedoOutlined />
@@ -240,10 +295,18 @@ class Chapter extends Component {
 
         <Modal
           visible={previewVisible}
+          title='预览课时'
           footer={null}
           onCancel={this.handleImgModal}
+          // x依然播放 ==> 销毁
+          destroyOnClose={true}
         >
-          <img alt="example" style={{ width: "100%" }} src={previewImage} />
+          <Player
+            sources={sources}
+            id={'1'}
+            cover={'http://localhost:3000/logo512.png'}
+            duration={1000}
+          ></Player>
         </Modal>
       </div>
     );

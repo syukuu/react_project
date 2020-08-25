@@ -21,8 +21,7 @@ export function reqGetUploadToken() {
 }
 
 // 更新课时
-// http://localhost:5000/admin/edu/lesson/seve
-export function reqUpdateLesson({ chapterId, title, free, video }) {
+export function addLesson({ chapterId, title, free, video }) {
     return request({
         url: `${BASE_URL}/save`,
         method: 'POST',
@@ -31,6 +30,18 @@ export function reqUpdateLesson({ chapterId, title, free, video }) {
             title,
             free,
             video
+        }
+    })
+}
+
+// 批量删除课时章节
+export function reqBatchRemoveLessonList(lessonIdList) {
+    // console.log(courseId)
+    return request({
+        url: `${BASE_URL}/batchRemove`,
+        method: 'DELETE',
+        data: {
+            idList: lessonIdList
         }
     })
 }

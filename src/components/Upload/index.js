@@ -8,6 +8,11 @@ import { reqGetUploadToken } from '@api/edu/lesson'
 export default class MyUpload extends Component {
     constructor() {
         super()
+
+        this.state = {
+            isShowUpload: true
+        }
+
         // 3、从本地获取token
         const jsonStr = localStorage.getItem('UPLOADTOKEN')
         if (jsonStr) {
@@ -64,7 +69,13 @@ export default class MyUpload extends Component {
                 // ...
                 console.log('上传完成', res)
                 onSuccess(res)
-                // 在这里调用Form.Item传过来的onChange
+
+                // 上传完成时隐藏按钮
+                this.setState = {
+                    isShowUpload: false
+                }
+
+                // 受控组件Form.Item---指定控制传过来的onChange
                 // 通过props获取onChange, 控制上传视频表单项的值
                 this.props.onChange('http://qfejj27qg.hn-bkt.clouddn.com/' + res.key)
             }
@@ -98,6 +109,9 @@ export default class MyUpload extends Component {
     // 删除上传的视频
     handleRemove = () => {
         this.props.onChange('')
+        this.setState = {
+            isShowUpload: true
+        }
     }
     render() {
         return (
@@ -106,10 +120,14 @@ export default class MyUpload extends Component {
                 beforeUpload={this.handleBefore}
                 customRequest={this.handleCustom}
                 onRemove={this.handleRemove}
+                accept='video/*'
             >
-                <Button>
-                    <UploadOutlined />上传视频
-                </Button>
+                {
+                    this.state.isShowUpload &&
+                    <Button>
+                        <UploadOutlined />上传视频
+                    </Button>
+                }
             </Upload>
 
         )
