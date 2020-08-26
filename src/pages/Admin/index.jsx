@@ -1,15 +1,14 @@
 import React, { Component } from "react";
 
 import Analysis from "./Analysis";
-// import Monitor from "./Monitor";
-// import Search from "./Search";
-// import Statistics from "./Statistics";
+import Sales from "./Sales";
 
 export default class Admin extends Component {
   render() {
     return (
       <div>
         <Analysis />
+        <Sales />
       </div>
     );
   }
